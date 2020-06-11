@@ -40,8 +40,9 @@ function createLi(object) {
   const editButton = document.createElement('button');
   editButton.setAttribute("uk-icon","icon: pencil");
   editButton.classList.add("edit-button");
+  editButton.setAttribute('uk-toggle',"target: #edit-form-container");
+  editButton.addEventListener('click', e => editCalorieFunction(e, object, li))
   li.append(editButton);
-  // editButton.addEventListener('click', e => editCalorieFunction(e, object, li))
   li.className = "calories-list-item";
 
   return li
@@ -112,11 +113,18 @@ function deleteCalorieFunction(e, object, li) {
 }
 
 function editCalorieFunction(e, objectCalorie, li) {
-  const form = document.getElementById('new-calorie-form');
+  const form = document.getElementById('edit-calorie-form');
+  form[0].value = objectCalorie.calorie
+  form[1].value = objectCalorie.note
 
+  form.addEventListener('submit', e => updateCalorieFunction(e, objectCalorie, li))
+}
+
+function updateCalorieFunction(e, objectCalorie, li) {
+  e.preventDefault();
   let object = {
-  calorie: `${e.target[0].value}`,
-  note: `${e.target[1].value}`
+  calorie: e.target[0].value,
+  note: e.target[1].value
   };
   
   let configObject = {
@@ -127,14 +135,17 @@ function editCalorieFunction(e, objectCalorie, li) {
   },
   body: JSON.stringify(object)
   };
-  
-  fetch(`${urlApi}/${objectCalorie.id}/edit`, configObject)
+
+  fetch(`${urlApi}/${objectCalorie.id}`, configObject)
   .then(resp => resp.json())
-  .then(data => renderLi(data))
+  .then(updatedData => {
+    countArray = countArray.filter(ob => object != ob);
+    renderLi(updatedData)})
   .catch(error => console.log(error));
 
-  li.remove
+    li.remove();
 }
+
 
 calculateForm.addEventListener('submit', e => calculateBMR(e))
 
